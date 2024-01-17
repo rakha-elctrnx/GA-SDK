@@ -14,10 +14,15 @@
     
       gtag('config', 'G-YXQG2W3GG7');
     </script> -->
-    <script src="./assets/ganalytics.js"></script>
-    <script async>
-      ga4Instance.initialize("G-PQ6XTTEVT5");
-      pageEvent('/', 'example-1');
+    <script src="./assets/appsinsight.js"></script>
+    <script>
+      appInsights.trackPageView({
+      name: "Home", // Ganti dengan nama halaman yang sesuai
+      uri: window.location.href, // URI halaman saat ini
+    });
+      // appInsights.trackPageView("Home");
+      // ga4Instance.initialize("G-PQ6XTTEVT5");
+      // pageEvent('/', 'example-1');
     </script>
 </head>
 <body>
@@ -53,7 +58,7 @@
             <div class="col-lg-6 mx-auto">
               <p class="lead mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Suscipit aliquid ipsam atque possimus ipsa quam perferendis animi odit, ex error eum nam itaque quas quaerat dolorum vitae mollitia, rerum cum minus. Mollitia repellat modi doloremque ipsum, libero impedit quam nisi.</p>
               <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <button type="button" class="btn btn-primary btn-lg px-4 gap-3">Primary button</button>
+                <button type="button" class="btn btn-primary btn-lg px-4 gap-3" onclick="clickBannerEvent()">Primary button</button>
                 <button type="button" class="btn btn-outline-secondary btn-lg px-4">Secondary</button>
               </div>
             </div>

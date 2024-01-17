@@ -13,6 +13,16 @@ const gtag = (...args) => {
   }
 };
 
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function (txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
+
+function redactEmail(email) {
+  return email;
+}
+
 function format(s = "", titleCase = true, redactingEmail = true) {
   let _str = s || "";
 
@@ -53,9 +63,12 @@ class GA4 {
     }
   };
 
-  gtag(...args) {
-    this._gtag(...args);
-  }
+  mergeOptions = (...options) => {
+    return options.reduce((mergedOptions, option) => ({
+      ...mergedOptions,
+      ...this._toGtagOptions(option),
+    }), {});
+  };
 
   _loadGA = (GA_MEASUREMENT_ID, nonce) => {
     if (
@@ -66,7 +79,7 @@ class GA4 {
       return;
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", () => {
       const script = document.createElement("script");
       script.async = true;
       script.src = `${GTM_URL}?id=${GA_MEASUREMENT_ID}`;
@@ -125,10 +138,9 @@ class GA4 {
       throw new Error("Require GA_MEASUREMENT_ID");
     }
 
-    const initConfigs =
-      typeof GA_MEASUREMENT_ID === "string"
-        ? [{ trackingId: GA_MEASUREMENT_ID }]
-        : GA_MEASUREMENT_ID;
+    const initConfigs = Array.isArray(GA_MEASUREMENT_ID)
+      ? GA_MEASUREMENT_ID
+      : [{ trackingId: GA_MEASUREMENT_ID }];
 
     this._currentMeasurementId = initConfigs[0].trackingId;
     const {
@@ -147,11 +159,7 @@ class GA4 {
       this._gtag("js", new Date());
 
       initConfigs.forEach((config) => {
-        const mergedGtagOptions = {
-          ...this._toGtagOptions({ ...gaOptions, ...config.gaOptions }),
-          ...gtagOptions,
-          ...config.gtagOptions,
-        };
+        const mergedGtagOptions = this.mergeOptions(gaOptions, config.gaOptions, gtagOptions, config.gtagOptions);
         if (Object.keys(mergedGtagOptions).length) {
           this._gtag("config", config.trackingId, mergedGtagOptions);
         } else {
@@ -209,27 +217,8 @@ class GA4 {
     });
   };
 
-  _gaCommandSendEventParameters = (...args) => {
-    if (typeof args[0] === "string") {
-      this._gaCommandSendEvent(...args.slice(1));
-    } else {
-      const {
-        eventCategory,
-        eventAction,
-        eventLabel,
-        eventValue,
-        // eslint-disable-next-line no-unused-vars
-        hitType,
-        ...rest
-      } = args[0];
-      this._gaCommandSendEvent(
-        eventCategory,
-        eventAction,
-        eventLabel,
-        eventValue,
-        rest
-      );
-    }
+  _gaCommandSendEventParameters = ({ eventCategory, eventAction, eventLabel, eventValue, ...rest }) => {
+    this._gaCommandSendEvent(eventCategory, eventAction, eventLabel, eventValue, rest);
   };
 
   _gaCommandSendTiming = (
@@ -425,4 +414,11 @@ const ga4Instance = GA4.createInstance();
 
 const pageEvent = (page, title = "") => {
     ga4Instance.send({ hitType: "pageview", page: page, title: title });
+}
+
+const clickBannerEvent = () => {
+  ga4Instance.event({
+    category: 'Banner',
+    action: 'Click Banner'
+  })
 }
